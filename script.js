@@ -19,6 +19,7 @@
     FIRST_OBSTACLE_DELAY: 1.6,
     GAP_START: 1.55,
     GAP_MIN: 0.85,
+    MIXED_GAP: 1.2,
     RAMP_TIME: 100,
     UNITS_PER_METER: 40,
     CLEAR_BONUS: 10,
@@ -218,6 +219,7 @@
     obstacles: [],
     pools: new Map(),
     seenTypes: new Set(),
+    lastNeed: null,
     hintTimer: 0,
     rafId: 0,
     lastTime: 0,
@@ -316,7 +318,12 @@
     };
     game.obstacles.push(obstacle);
     placeObstacle(obstacle);
-    game.nextSpawnX += type.w + game.speed * gapSeconds();
+    const gap =
+      game.lastNeed !== null && game.lastNeed !== type.need
+        ? Math.max(gapSeconds(), CONFIG.MIXED_GAP)
+        : gapSeconds();
+    game.nextSpawnX += type.w + game.speed * gap;
+    game.lastNeed = type.need;
 
     if (!game.seenTypes.has(kind)) {
       game.seenTypes.add(kind);
@@ -453,6 +460,7 @@
     game.groundOffset = 0;
     game.farOffset = 0;
     game.seenTypes.clear();
+    game.lastNeed = null;
     player.y = 0;
     player.vy = 0;
     player.jumping = false;
@@ -751,7 +759,9 @@
     const rect = el.stage.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     const scale = Math.min(rect.width / CONFIG.WORLD_W, rect.height / CONFIG.WORLD_H);
-    el.world.style.transform = `scale(${scale})`;
+    const x = (rect.width - CONFIG.WORLD_W * scale) / 2;
+    const y = (rect.height - CONFIG.WORLD_H * scale) / 2;
+    el.world.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
   }
 
   function observeResize() {

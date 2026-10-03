@@ -153,7 +153,14 @@
   }
 
   /* ---- game world (virtual 1000 x 560 units, scaled to fit the stage) ---- */
+  .stage-wrap {
+    container-type: size;
+  }
   .stage {
+    position: relative;
+    width: min(100cqw, calc(100cqh * 1000 / 560));
+    max-width: 1100px;
+    aspect-ratio: 1000 / 560;
     background: linear-gradient(#7dd3fc 0%, #bae6fd 58%, #e0f2fe 78%, #f0fdf4 100%);
   }
   .world {

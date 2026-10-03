@@ -154,6 +154,7 @@
   }
   img, svg, video, canvas, audio, iframe, embed, object {
     display: block;
+    vertical-align: middle;
   }
   img, video {
     max-width: 100%;
@@ -1090,7 +1091,14 @@
     --tw-numeric-spacing: tabular-nums;
     font-variant-numeric: var(--tw-ordinal,) var(--tw-slashed-zero,) var(--tw-numeric-figure,) var(--tw-numeric-spacing,) var(--tw-numeric-fraction,);
   }
+  .stage-wrap {
+    container-type: size;
+  }
   .stage {
+    position: relative;
+    width: min(100cqw, calc(100cqh * 1000 / 560));
+    max-width: 1100px;
+    aspect-ratio: 1000 / 560;
     background: linear-gradient(#7dd3fc 0%, #bae6fd 58%, #e0f2fe 78%, #f0fdf4 100%);
   }
   .world {
