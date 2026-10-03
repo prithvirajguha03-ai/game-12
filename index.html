@@ -1,13 +1,205 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="./output.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Running Goat - a friendly endless runner. Jump and dodge to keep the goat running.">
+  <meta name="theme-color" content="#7dd3fc">
+  <title>Running Goat</title>
+  <link href="./src/output.css" rel="stylesheet">
 </head>
-<body>
-  <h1 class="text-3xl font-bold underline">
-    Hello world!
-  </h1>
+<body class="h-dvh select-none overflow-hidden overscroll-none bg-gradient-to-b from-sky-200 via-sky-100 to-emerald-100 font-sans text-slate-800 antialiased touch-none">
+
+  <div class="mx-auto flex h-full w-full max-w-6xl flex-col gap-2 p-2 sm:gap-3 sm:p-4">
+
+    <header class="game-header">
+      <div class="brand-row flex min-w-0 items-center gap-2">
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-white/80 text-xl shadow-sm ring-2 ring-emerald-200 sm:h-11 sm:w-11 sm:text-2xl" aria-hidden="true">🐐</span>
+        <h1 class="truncate text-lg font-black tracking-tight text-emerald-900 sm:text-2xl">RUNNING GOAT</h1>
+        <p id="stateBadge" class="flex shrink-0 items-center gap-1 rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-bold text-emerald-900 ring-2 ring-emerald-300 sm:text-xs">
+          <span id="stateBadgeIcon" aria-hidden="true">●</span>
+          <span id="stateBadgeText">READY</span>
+        </p>
+      </div>
+
+      <div class="btn-row flex shrink-0 items-center gap-2">
+        <button type="button" id="btnPause" class="game-btn-game" aria-label="Pause the game" disabled>
+          <span aria-hidden="true">⏸</span><span class="hidden sm:inline">Pause</span>
+        </button>
+        <button type="button" id="btnMute" class="game-btn-game" aria-pressed="false" aria-label="Mute sound">
+          <span id="btnMuteIcon" aria-hidden="true">🔊</span><span class="hidden sm:inline" id="btnMuteText">Sound</span>
+        </button>
+      </div>
+
+      <dl class="stat-row grid grid-cols-3 gap-2">
+        <div class="stat-chip">
+          <dt>Score</dt>
+          <dd id="statScore">0</dd>
+        </div>
+        <div class="stat-chip">
+          <dt>Distance</dt>
+          <dd><span id="statMeters">0</span><span class="text-[11px] font-bold sm:text-xs"> m</span></dd>
+        </div>
+        <div class="stat-chip">
+          <dt>Best</dt>
+          <dd id="statBest">0</dd>
+        </div>
+      </dl>
+    </header>
+
+    <main class="relative flex min-h-0 flex-1 items-center justify-center">
+      <div id="stage" class="stage relative aspect-[1000/560] max-h-full w-full max-w-[1100px] overflow-hidden rounded-2xl shadow-xl shadow-emerald-900/15 ring-4 ring-white sm:rounded-3xl">
+
+        <div id="world" class="world" aria-hidden="true">
+          <div class="sky-decor">
+            <div class="sun"></div>
+            <div class="cloud cloud-a"></div>
+            <div class="cloud cloud-b"></div>
+            <div class="cloud cloud-c"></div>
+            <div class="hill hill-back"></div>
+            <div class="hill hill-front"></div>
+            <div id="farLayer" class="far-layer"></div>
+          </div>
+
+          <div id="ground" class="ground"></div>
+          <div id="obstacleLayer" class="obstacle-layer"></div>
+
+          <div id="goat" class="goat" data-pose="idle">
+            <svg class="goat-svg" viewBox="0 -3 130 102" role="presentation" focusable="false">
+              <path class="goat-tail" d="M28 46 q-14 -6 -16 6 q4 10 16 8 z" fill="#f3e7d3"/>
+
+              <g class="goat-leg goat-leg-a">
+                <rect x="37" y="70" width="9" height="24" rx="4.5" fill="#c9b79c"/>
+                <rect x="37" y="90" width="9" height="9" rx="3.5" fill="#4b4b52"/>
+              </g>
+              <g class="goat-leg goat-leg-b">
+                <rect x="49" y="70" width="9" height="24" rx="4.5" fill="#c9b79c"/>
+                <rect x="49" y="90" width="9" height="9" rx="3.5" fill="#4b4b52"/>
+              </g>
+
+              <g class="goat-body">
+                <ellipse cx="62" cy="58" rx="32" ry="20" fill="#fffaf0"/>
+                <ellipse cx="62" cy="65" rx="23" ry="10" fill="#f1e6d2"/>
+
+                <path d="M91 20 q-5 -15 -17 -19 q3 14 9 21 z" fill="#a1794f"/>
+                <path d="M100 18 q3 -14 14 -19 q-4 14 -8 20 z" fill="#a1794f"/>
+                <ellipse cx="92" cy="17" rx="10" ry="5" fill="#e0cfae" transform="rotate(-72 92 17)" opacity=".75"/>
+
+                <circle cx="96" cy="35" r="17" fill="#fffaf0"/>
+                <ellipse cx="83" cy="26" rx="11" ry="5.5" fill="#e9d8bd" transform="rotate(-32 83 26)"/>
+                <ellipse cx="110" cy="42" rx="11" ry="8" fill="#f3ddc8"/>
+                <circle cx="113" cy="40" r="1.8" fill="#a1794f"/>
+                <path d="M106 47 q6 3 10 -1" stroke="#e0cfae" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+                <g class="goat-eye">
+                  <circle cx="100" cy="32" r="5.4" fill="#ffffff"/>
+                  <circle cx="101.5" cy="32.5" r="2.9" fill="#33302c"/>
+                  <circle cx="102.6" cy="31.2" r="1" fill="#ffffff"/>
+                </g>
+                <g class="goat-eye-x">
+                  <path d="M96 28 l8 8 M104 28 l-8 8" stroke="#33302c" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+                </g>
+
+                <path d="M99 49 q6 12 -2 16 q-7 -2 -6 -12 z" fill="#f1e6d2"/>
+              </g>
+
+              <g class="goat-leg goat-leg-b">
+                <rect x="73" y="70" width="9" height="24" rx="4.5" fill="#f1e6d2"/>
+                <rect x="73" y="90" width="9" height="9" rx="3.5" fill="#4b4b52"/>
+              </g>
+              <g class="goat-leg goat-leg-a">
+                <rect x="85" y="70" width="9" height="24" rx="4.5" fill="#f1e6d2"/>
+                <rect x="85" y="90" width="9" height="9" rx="3.5" fill="#4b4b52"/>
+              </g>
+            </svg>
+            <span id="hint" class="hint" hidden></span>
+          </div>
+
+          <div id="floaters" class="floater-layer"></div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="shrink-0">
+      <div class="flex items-stretch gap-2 sm:gap-3">
+        <button type="button" id="btnJump" class="action-btn bg-amber-300 ring-amber-500/60 hover:bg-amber-200">
+          <span class="text-2xl leading-none" aria-hidden="true">⤒</span>
+          <span class="flex flex-col items-start leading-tight">
+            <span class="text-base font-black sm:text-xl">JUMP</span>
+            <span class="text-[11px] font-bold text-amber-900/70">Space / ↑</span>
+          </span>
+        </button>
+        <button type="button" id="btnDodge" class="action-btn bg-sky-300 ring-sky-500/60 hover:bg-sky-200">
+          <span class="text-2xl leading-none" aria-hidden="true">⤓</span>
+          <span class="flex flex-col items-start leading-tight">
+            <span class="text-base font-black sm:text-xl">DODGE</span>
+            <span class="text-[11px] font-bold text-sky-900/70">Arrow ↓</span>
+          </span>
+        </button>
+      </div>
+      <p class="tip-line mt-2 text-center text-[11px] font-semibold text-emerald-900/60 sm:text-xs">
+        Tap the course to jump · Esc to pause
+      </p>
+    </footer>
+  </div>
+
+  <div id="overlayStart" class="game-overlay" role="dialog" aria-labelledby="startTitle" aria-modal="true">
+    <div class="game-card">
+      <p class="mb-1 text-5xl sm:text-6xl" aria-hidden="true">🐐</p>
+      <h2 id="startTitle" class="text-3xl font-black tracking-tight text-emerald-900 sm:text-5xl">RUNNING GOAT</h2>
+      <p class="mt-2 text-base font-bold text-emerald-800 sm:text-xl">Help the goat keep running!</p>
+      <p class="mt-1 text-sm font-semibold text-slate-600 sm:text-base">Jump or dodge obstacles and keep the run going.</p>
+
+      <ul class="mx-auto mt-4 grid max-w-sm gap-2 text-left">
+        <li class="control-row">
+          <span class="control-key bg-amber-200 text-amber-900">⤒ JUMP</span>
+          <span class="text-sm font-semibold text-slate-700">Space, ↑, or the JUMP button — rocks, logs, bushes, hurdles</span>
+        </li>
+        <li class="control-row">
+          <span class="control-key bg-sky-200 text-sky-900">⤓ DODGE</span>
+          <span class="text-sm font-semibold text-slate-700">↓ or the DODGE button — duck under low branches</span>
+        </li>
+      </ul>
+
+      <button type="button" id="btnStart" class="primary-btn mt-5">START GAME</button>
+      <p class="mt-3 text-sm font-bold text-slate-500">Best score: <span id="startBest">0</span></p>
+    </div>
+  </div>
+
+  <div id="overlayPause" class="game-overlay" role="dialog" aria-labelledby="pauseTitle" aria-modal="true" hidden>
+    <div class="game-card">
+      <p class="mb-1 text-5xl" aria-hidden="true">⏸</p>
+      <h2 id="pauseTitle" class="text-3xl font-black tracking-tight text-emerald-900 sm:text-4xl">PAUSED</h2>
+      <p class="mt-2 text-sm font-semibold text-slate-600 sm:text-base">Take your time. The goat is waiting.</p>
+      <button type="button" id="btnResume" class="primary-btn mt-5">RESUME</button>
+      <button type="button" id="btnRestart" class="secondary-btn mt-2">START OVER</button>
+    </div>
+  </div>
+
+  <div id="overlayOver" class="game-overlay" role="dialog" aria-labelledby="overTitle" aria-modal="true" hidden>
+    <div class="game-card">
+      <p class="mb-1 text-5xl" aria-hidden="true">🛑</p>
+      <h2 id="overTitle" class="text-3xl font-black tracking-tight text-rose-900 sm:text-5xl">GAME OVER</h2>
+      <p id="newBestBadge" class="mt-2 inline-block rounded-full bg-amber-300 px-4 py-1 text-sm font-black text-amber-950 ring-2 ring-amber-500" hidden>★ NEW BEST!</p>
+
+      <dl class="mx-auto mt-4 grid max-w-xs grid-cols-2 gap-3">
+        <div class="result-chip">
+          <dt>Your Score</dt>
+          <dd id="overScore">0</dd>
+        </div>
+        <div class="result-chip">
+          <dt>Best Score</dt>
+          <dd id="overBest">0</dd>
+        </div>
+      </dl>
+      <p class="mt-2 text-sm font-bold text-slate-500">Distance run: <span id="overMeters">0</span> m</p>
+
+      <button type="button" id="btnPlayAgain" class="primary-btn mt-5">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <p id="announcer" class="sr-only" role="status" aria-live="polite"></p>
+
+  <script src="./script.js"></script>
 </body>
 </html>
